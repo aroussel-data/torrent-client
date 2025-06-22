@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"torrent/types"
 	"torrent/utils"
 )
 
@@ -25,6 +26,17 @@ func main() {
 
 	// NOTE: use the announce URL in torrent file to find peers
 	// by calling tracker
-	fmt.Println(torrentFile.RequestPeers(peerID, 6881))
+	peers, err := torrentFile.RequestPeers(peerID, 6881)
+	utils.FatalCheck(err)
 
+	torrent := types.Torrent{
+		Peers:       peers,
+		PeerID:      peerID,
+		InfoHash:    torrentFile.InfoHash,
+		PieceHashes: torrentFile.PieceHashes,
+		PieceLength: torrentFile.PieceLength,
+		Length:      torrentFile.Length,
+		Name:        torrentFile.Name,
+	}
+	fmt.Println(torrent.Name)
 }
