@@ -1,7 +1,9 @@
-package types
+package torrent
+
+import "torrent/torrentfile"
 
 type Torrent struct {
-	Peers       []Peer
+	Peers       []torrentfile.Peer
 	PeerID      [20]byte
 	InfoHash    [20]byte
 	PieceHashes [][20]byte

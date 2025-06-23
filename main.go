@@ -38,5 +38,8 @@ func main() {
 		Length:      torrentFile.Length,
 		Name:        torrentFile.Name,
 	}
-	fmt.Println(torrent.Name)
+	fmt.Println(torrent.Length)
+
+	// TODO: need a client that implements handshake and send/rcv bittorrent msgs
+
 }
