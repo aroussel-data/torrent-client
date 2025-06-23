@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"torrent/types"
+	"torrent/torrentfile"
 
 	"github.com/jackpal/bencode-go"
 )
@@ -22,17 +22,17 @@ func FatalCheck(er error) {
 	}
 }
 
-func Open(path string) (types.TorrentFile, error) {
+func Open(path string) (torrentfile.TorrentFile, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return types.TorrentFile{}, err
+		return torrentfile.TorrentFile{}, err
 	}
 	defer file.Close()
 
-	bto := types.BencodeTorrent{}
+	bto := torrentfile.BencodeTorrent{}
 	err = bencode.Unmarshal(file, &bto)
 	if err != nil {
-		return types.TorrentFile{}, err
+		return torrentfile.TorrentFile{}, err
 	}
 	return bto.ToTorrentFile()
 }

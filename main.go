@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"torrent/types"
+	"torrent/client"
+	"torrent/torrent"
 	"torrent/utils"
 )
 
@@ -29,7 +30,7 @@ func main() {
 	peers, err := torrentFile.RequestPeers(peerID, 6881)
 	utils.FatalCheck(err)
 
-	torrent := types.Torrent{
+	torrent := torrent.Torrent{
 		Peers:       peers,
 		PeerID:      peerID,
 		InfoHash:    torrentFile.InfoHash,
@@ -38,8 +39,9 @@ func main() {
 		Length:      torrentFile.Length,
 		Name:        torrentFile.Name,
 	}
-	fmt.Println(torrent.Length)
 
 	// TODO: need a client that implements handshake and send/rcv bittorrent msgs
 
+	client := client.New(torrent.Peers[0], torrent.InfoHash, torrent.PeerID)
+	fmt.Println(client)
 }
