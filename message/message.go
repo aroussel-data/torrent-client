@@ -39,18 +39,19 @@ func Read(r io.Reader) (*Message, error) {
 	// from docs: peer wire protocol consists of a handshake followed by a never-ending stream of length-prefixed messages
 	// All later integers sent in the protocol are encoded as four bytes big-endian.
 	// That's it for handshaking, next comes an alternating stream of length prefixes and messages. Messages of length zero are keepalives, and ignored. Keepalives are generally sent once every two minutes, but note that timeouts can be done much more quickly when data is expected.
-	lengthBuf := make([]byte, 4)
+	lengthBuf := make([]byte, 4) // this is the length prefix for all messages
 	_, err := io.ReadFull(r, lengthBuf)
 	if err != nil {
 		return nil, err
 	}
-	length := binary.BigEndian.Uint32(lengthBuf)
+	length := binary.BigEndian.Uint32(lengthBuf) // length indicator for the actual msg is 4 byte buffer
 
 	// keep-alive message
 	if length == 0 {
 		return nil, nil
 	}
 
+	// read actual message
 	messageBuf := make([]byte, length)
 	_, err = io.ReadFull(r, messageBuf)
 	if err != nil {

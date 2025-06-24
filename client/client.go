@@ -7,6 +7,7 @@ import (
 	"time"
 	"torrent/bitfield"
 	"torrent/handshake"
+	"torrent/message"
 	"torrent/torrentfile"
 )
 
@@ -42,7 +43,25 @@ func completeHandshake(conn net.Conn, infoHash, peerID [20]byte) (*handshake.Han
 }
 
 func receiveBitfield(conn net.Conn) (bitfield.Bitfield, error) {
-	return nil, nil
+	conn.SetDeadline(time.Now().Add(5 * time.Second))
+	defer conn.SetDeadline(time.Time{})
+
+	msg, err := message.Read(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	if msg == nil {
+		err := fmt.Errorf("Expected bitfield but got %v", msg)
+		return nil, err
+	}
+
+	if msg.ID != message.MsgBitfield { // should be 5 to indicate bitfield msg
+		err := fmt.Errorf("Expected ID for bitfield msg but got %v", msg.ID)
+		return nil, err
+	}
+
+	return msg.Payload, nil
 }
 
 func New(peer torrentfile.Peer, infoHash [20]byte, peerID [20]byte) (*Client, error) {
