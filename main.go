@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"torrent/client"
@@ -40,9 +41,12 @@ func main() {
 		Name:        torrentFile.Name,
 	}
 
-	// TODO: need a client that implements handshake and send/rcv bittorrent msgs
 	client, err := client.New(torrent.Peers[0], torrent.InfoHash, torrent.PeerID)
 	utils.FatalCheck(err)
-	fmt.Println("****")
-	fmt.Println(client)
+
+	defer client.Conn.Close()
+	log.Printf("Completed handshake with %v", torrent.Peers[0].String())
+
+	// TODO: implement functions to tell peer to unchoke and that we are interested.
+
 }
