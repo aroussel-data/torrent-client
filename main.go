@@ -41,7 +41,8 @@ func main() {
 	}
 
 	// TODO: need a client that implements handshake and send/rcv bittorrent msgs
-
-	client := client.New(torrent.Peers[0], torrent.InfoHash, torrent.PeerID)
+	client, err := client.New(torrent.Peers[0], torrent.InfoHash, torrent.PeerID)
+	utils.FatalCheck(err)
+	fmt.Println("****")
 	fmt.Println(client)
 }

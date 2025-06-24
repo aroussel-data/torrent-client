@@ -19,6 +19,10 @@ type Peer struct {
 	Port uint16
 }
 
+func (p *Peer) String() string {
+	return net.JoinHostPort(p.IP.String(), strconv.Itoa(int(p.Port)))
+}
+
 type TorrentFile struct {
 	Announce    string
 	InfoHash    [20]byte
