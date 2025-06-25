@@ -34,6 +34,20 @@ type Message struct {
 	Payload []byte
 }
 
+// Serializes a msg into a buffer of:
+// [<length><msgID><payload>]
+func (m *Message) Serialize() []byte {
+	if m == nil {
+		return make([]byte, 4)
+	}
+	length := uint32(len(m.Payload) + 1)         // 1 is extra byte for message ID
+	buf := make([]byte, length+4)                // 4 extra bytes for the length prefix (all ints sent in protocol are four bytes)
+	binary.BigEndian.PutUint32(buf[0:4], length) // put length prefix at start of buffer
+	buf[4] = byte(m.ID)
+	copy(buf[5:], m.Payload)
+	return buf
+}
+
 // Read parses a message from a stream. Returns `nil` on keep-alive message
 func Read(r io.Reader) (*Message, error) {
 	// from docs: peer wire protocol consists of a handshake followed by a never-ending stream of length-prefixed messages

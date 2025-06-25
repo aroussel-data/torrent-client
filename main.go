@@ -22,11 +22,11 @@ func main() {
 	torrentFile, err := utils.Open(path)
 	utils.FatalCheck(err)
 
-	// NOTE: just use a random peer ID
+	// just use a random peer ID
 	peerID, err := utils.GeneratePeerID()
 	utils.FatalCheck(err)
 
-	// NOTE: use the announce URL in torrent file to find peers
+	// use the announce URL in torrent file to find peers
 	// by calling tracker
 	peers, err := torrentFile.RequestPeers(peerID, 6881)
 	utils.FatalCheck(err)
@@ -47,6 +47,13 @@ func main() {
 	defer client.Conn.Close()
 	log.Printf("Completed handshake with %v", torrent.Peers[0].String())
 
-	// TODO: implement functions to tell peer to unchoke and that we are interested.
+	client.SendUnchoke()
+	client.SendInterested()
+
+	for index := range torrent.PieceHashes {
+		if client.Bitfield.HasPiece(index) {
+			log.Printf("Peer %s has piece at index %d", torrent.Peers[0].String(), index)
+		}
+	}
 
 }
