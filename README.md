@@ -11,3 +11,6 @@ BitTorrent protocol spec can be found at:
 
 https://www.bittorrent.org/beps/bep_0003.html
 
+Acknowledgements:
+Thank you to [Jesse Li](https://blog.jse.li/posts/torrent/) for the original guide and implementation. 
+

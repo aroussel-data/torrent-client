@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io"
 )
 
@@ -46,6 +47,45 @@ func (m *Message) Serialize() []byte {
 	buf[4] = byte(m.ID)
 	copy(buf[5:], m.Payload)
 	return buf
+}
+
+func FormatRequest(index int, offset int, length int) *Message {
+	payload := make([]byte, 12)
+	binary.BigEndian.PutUint32(payload[0:4], uint32(index))  // 4 bytes for index
+	binary.BigEndian.PutUint32(payload[4:8], uint32(offset)) // 4 bytes for offset
+	binary.BigEndian.PutUint32(payload[8:], uint32(length))  // 4 bytes for length
+	// binary.BigEndian.PutUint32(payload[8:12], uint32(length)) // 4 bytes for length
+	return &Message{ID: MsgRequest, Payload: payload}
+}
+
+func ParseHave(msg *Message) (int, error) {
+	if msg.ID != MsgHave || len(msg.Payload) < 4 {
+		return -1, fmt.Errorf("invalid message ID or not enough payload")
+	}
+	index := binary.BigEndian.Uint32(msg.Payload)
+	return int(index), nil
+}
+
+func ParsePiece(index int, buf []byte, msg *Message) (int, error) {
+	if msg.ID != MsgPiece || len(msg.Payload) < 8 {
+		return -1, fmt.Errorf("invalid message ID or not enough payload")
+	}
+	// first 4 bytes are the index of the piece, next 4 bytes are the offset
+	pieceIndex := int(binary.BigEndian.Uint32(msg.Payload[0:4]))
+	if pieceIndex != index {
+		return -1, fmt.Errorf("Expected piece index %d, got %d", index, pieceIndex)
+	}
+	offset := int(binary.BigEndian.Uint32(msg.Payload[4:8]))
+	if offset >= len(buf) {
+		return -1, fmt.Errorf("offset %d is out of bounds for buffer of length %d", offset, len(buf))
+	}
+	data := msg.Payload[8:] // the actual data starts after the first 8 bytes
+	if len(data)+offset > len(buf) {
+		return -1, fmt.Errorf("data length %d with offset %d exceeds buffer length %d", len(data), offset, len(buf))
+	}
+	// copy the payload into the buffer at the offset
+	copy(buf[offset:], data)
+	return len(data), nil
 }
 
 // Read parses a message from a stream. Returns `nil` on keep-alive message

@@ -31,7 +31,7 @@ func main() {
 	peers, err := torrentFile.RequestPeers(peerID, 6881)
 	utils.FatalCheck(err)
 
-	torrent := torrent.Torrent{
+	tr := torrent.Torrent{
 		Peers:       peers,
 		PeerID:      peerID,
 		InfoHash:    torrentFile.InfoHash,
@@ -40,20 +40,7 @@ func main() {
 		Length:      torrentFile.Length,
 		Name:        torrentFile.Name,
 	}
-
-	client, err := client.New(torrent.Peers[0], torrent.InfoHash, torrent.PeerID)
-	utils.FatalCheck(err)
-
-	defer client.Conn.Close()
-	log.Printf("Completed handshake with %v", torrent.Peers[0].String())
-
-	client.SendUnchoke()
-	client.SendInterested()
-
-	for index := range torrent.PieceHashes {
-		if client.Bitfield.HasPiece(index) {
-			log.Printf("Peer %s has piece at index %d", torrent.Peers[0].String(), index)
-		}
-	}
+	// log.Printf("Torrent has %d piece hashes and each has %d piece length", len(tr.PieceHashes), tr.PieceLength)
+	// that makes a the total 700MB file
 
 }
