@@ -22,7 +22,7 @@ type pieceProgress struct {
 	backlog    int    // number of bytes in backlog
 }
 
-func (p *pieceProgress) ReadMessage(client Client) error {
+func (p *pieceProgress) ReadMessage(client *Client) error {
 	msg, err := message.Read(client.Conn)
 	if err != nil {
 		return err
