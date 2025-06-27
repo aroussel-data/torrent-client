@@ -41,10 +41,11 @@ func main() {
 	// log.Printf("Torrent has %d piece hashes and each has %d piece length", len(tr.PieceHashes), tr.PieceLength)
 	// that makes a the total 700MB file
 
-	_, err = tr.Download()
+	res, err := tr.Download()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to download torrent:", err)
 		os.Exit(1)
 	}
+	fmt.Printf("Downloaded %d bytes from torrent %s\n", len(res), tr.Name)
 
 }

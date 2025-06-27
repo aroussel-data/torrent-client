@@ -91,7 +91,6 @@ func (c *Client) RequestPiece(index int, length int) ([]byte, error) {
 				state.requested += blockSize
 			}
 		}
-		// TODO: add error handling
 		err := state.ReadMessage(c)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read message for piece %d: %w", index, err)

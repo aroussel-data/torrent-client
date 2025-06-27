@@ -2,6 +2,8 @@ package torrent
 
 import (
 	"fmt"
+	"log"
+	"runtime"
 	"torrent/client"
 	"torrent/torrentfile"
 )
@@ -27,11 +29,16 @@ type pieceResult struct {
 	buf   []byte
 }
 
-func (t *Torrent) calculatePieceLength(index int) int {
+func (t *Torrent) calculatePieceBounds(index int) (begin, end int) {
+	begin = t.PieceLength * index
 	// if the end of the piece is beyond the total length of the torrent
 	// then the piece length is the remaining length of the torrent
-	begin := t.PieceLength * index
-	end := min(begin+t.PieceLength, t.Length)
+	end = min(begin+t.PieceLength, t.Length)
+	return begin, end
+}
+
+func (t *Torrent) calculatePieceLength(index int) int {
+	begin, end := t.calculatePieceBounds(index)
 	return end - begin
 }
 
@@ -81,5 +88,21 @@ func (t *Torrent) Download() ([]byte, error) {
 		go t.startDownloadFromPeer(peer, workQueue, results)
 	}
 
-	return nil, nil
+	buf := make([]byte, t.Length)
+	donePieces := 0
+
+	for donePieces < len(t.PieceHashes) {
+		result := <-results
+		begin, end := t.calculatePieceBounds(result.index)
+		copy(buf[begin:end], result.buf)
+		donePieces++
+
+		percentComplete := float64(donePieces) / float64(len(t.PieceHashes)) * 100
+		numWorkers := runtime.NumGoroutine() - 1 // subtract 1 for the main goroutine
+		log.Printf("Downloaded piece %d/%d (%.2f%% complete) with %d workers", donePieces, len(t.PieceHashes), percentComplete, numWorkers)
+	}
+
+	close(workQueue) // close the work queue to signal no more work
+
+	return buf, nil
 }
