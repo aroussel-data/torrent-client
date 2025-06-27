@@ -38,14 +38,17 @@ func main() {
 		Length:      torrentFile.Length,
 		Name:        torrentFile.Name,
 	}
-	// log.Printf("Torrent has %d piece hashes and each has %d piece length", len(tr.PieceHashes), tr.PieceLength)
+	// fmt.Printf("Torrent has %d piece hashes and each has %d piece length\n", len(tr.PieceHashes), tr.PieceLength)
 	// that makes a the total 700MB file
 
 	res, err := tr.Download()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to download torrent:", err)
-		os.Exit(1)
-	}
+	utils.FatalCheck(err)
 	fmt.Printf("Downloaded %d bytes from torrent %s\n", len(res), tr.Name)
 
+	// TODO: allow user to specify output file name
+	file, err := os.Create(tr.Name)
+	utils.FatalCheck(err)
+	defer file.Close()
+	_, err = file.Write(res)
+	utils.FatalCheck(err)
 }
